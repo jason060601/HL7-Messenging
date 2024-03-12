@@ -13,11 +13,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace YourAppName
+namespace FHIRMessagingApplication
 {
-    /// <summary>
-    /// Interaction logic for ClinicianRegistration.xaml
-    /// </summary>
     public partial class ClinicianRegistrationWindow : Window
     {
         public ClinicianRegistrationWindow()
@@ -36,7 +33,7 @@ namespace YourAppName
         int npiNumber = int.Parse(txtNpiNumber.Text);
         string employerName = txtEmployerName.Text;
 
-        //Save clinician to database
+        //Needs error handling
 
         Close();
 
