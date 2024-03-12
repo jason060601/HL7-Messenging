@@ -42,6 +42,8 @@ namespace YourAppName
             {
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
+                    //Current code results in querying all patient records
+                    //Update needed to ensure patient sees only their records - Josh
                     string query = "SELECT * FROM PatientRecords";
                     SqlCommand command = new SqlCommand(query, connection);
                     connection.Open();
@@ -50,6 +52,8 @@ namespace YourAppName
                     while (reader.Read())
                     {
                         // Create PatientRecord objects and add them to the collection
+                        //Unsecure method to receive information it should be sent in JSON format
+                        
                         patientRecords.Add(new PatientRecord
                         {
                             Id = reader.GetInt32(0),
