@@ -1,152 +1,79 @@
-// DashboardWindow.xaml.cs
-
-//Most of the methods will have to be scrapped due to noncompliance to FHIR standard, unless there are future revisions being done
-//Currently looking at libraries and source code that incorporates R4-standard for patient-clinician messaging
-//Existing built-in libraries such as Cryptography, Security, HTTP can assist in securing communication over HTTPS
-
 using System;
+using System.Net.Http;
 using System.Windows;
-using System.Data.SqlClient;
+using Hl7.Fhir.Rest; // Import FHIR client classes
+using Hl7.Fhir.Model; // Import FHIR model classes
 using System.Collections.ObjectModel;
+using Newtonsoft.Json;
 
-//common namespace for the application
 namespace FHIRMessagingApplication
 {
     public partial class DashboardWindow : Window
     {
-        //Warning: There is an arbitrary value {Database=YourDatabase} should have a connection key (for local testing) or the endpoint of the instance
-        //Since it is an endpoint, to connect to the EC2 instance (helpful for viewing files, information in the container)
-        //1) Install Remote Development extension pack
-        //2) Open command palette and select Remote SSH: Add New SSH Host
-        //3) In the "Add New SSH Host Ddialog", this is where we will put the IP address associated with the instance
-        //4) Click Add
-        //5) Open command palette and select the "Remote SSH: Connect to Host..." command
-        //6) Select the host which will be the EC2 instance
-        //Note: An SSH key pair must be provided to connect! This will be provided closer to the testing of the application
+        private readonly string fhirServerUrl = "https://your-fhir-server-url"; // Replace with the actual FHIR server URL
+        private readonly FhirClient fhirClient; // Use FhirClient for interacting with the FHIR server
 
-        //This must be replaced by a connection to the EC2 instance (different file) that utilizes TLS 
-       // private readonly string connectionString = "Server=localhost; Database=YourDatabase; Trusted_Connection=True";
-
-        // Collections to hold data for different sections
-        //Not sure about collections holding the necessary information, as it must be serialized in JSON (for HTTP POST request)
-        //Then deserialized
-        //Also, not sure how the collection will conform to the data model for class Patient
-        private ObservableCollection<PatientRecord> patientRecords;
-        private ObservableCollection<Message> messages;
         private ObservableCollection<Patient> patients;
+        private ObservableCollection<Message> messages;
         private ObservableCollection<LogEntry> logEntries;
 
         public DashboardWindow()
         {
             InitializeComponent();
+
+            // Initialize FhirClient for interacting with the FHIR server
+            fhirClient = new FhirClient(fhirServerUrl);
+
             InitializeData();
         }
 
-        // Method to initialize data for each section
-        //Looks like this assume that the 
-        private void InitializeData()
+        private async void InitializeData()
         {
-            LoadPatientRecords();
-            LoadMessages();
-            LoadPatients();
-            LoadLogEntries();
+            await LoadPatients();
+            await LoadMessages();
+            // Load other data as needed
         }
 
-        // Method to load patient records
-        //Entire method needs to be redone, as it is not FHIR compliant.
-        //Like mentioned earlier, 1) exchanges must be done using TLS handshakes; 2) data format must be in FHIR-approved form; and 3) encryption is vital to protecting information
-        
-        private void LoadPatientRecords()
-        {
-            patientRecords = new ObservableCollection<PatientRecord>();
-
-            try
-            {
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    //Current code results in querying all patient records
-                    //Update needed to ensure patient sees only their records - Josh
-                    string query = "SELECT * FROM PatientRecords";
-                    SqlCommand command = new SqlCommand(query, connection);
-                    connection.Open();
-                    SqlDataReader reader = command.ExecuteReader();
-
-                    while (reader.Read())
-                    {
-                        // Create PatientRecord objects and add them to the collection
-                        //Unsecure method to receive information it should be sent in JSON format
-                        
-                        patientRecords.Add(new PatientRecord
-                        {
-                            Id = reader.GetInt32(0),
-                            Name = reader.GetString(1),
-                            // Add other properties as needed
-                            
-                        });
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error loading patient records: " + ex.Message);
-            }
-        }
-
-        // Method to load messages
-    
-        private void LoadMessages()
-        {
-            messages = new ObservableCollection<Message>();
-
-            try
-            {
-                // Implement logic to load messages from database or any other source
-                // Example:
-                // messages.Add(new Message { Content = "Sample message 1", Sender = "John", Timestamp = DateTime.Now });
-                // messages.Add(new Message { Content = "Sample message 2", Sender = "Alice", Timestamp = DateTime.Now });
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error loading messages: " + ex.Message);
-            }
-        }
-
-        // Method to load patients
-        private void LoadPatients()
+        private async Task LoadPatients()
         {
             patients = new ObservableCollection<Patient>();
 
             try
             {
-                // Implement logic to load patients from database or any other source
-                // Example:
-                // patients.Add(new Patient { Id = 1, Name = "John Doe", Age = 30 });
-                // patients.Add(new Patient { Id = 2, Name = "Alice Smith", Age = 25 });
+                Bundle response = await fhirClient.SearchAsync<Patient>(); // Use FhirClient to search for Patients
+                foreach (var entry in response.Entry)
+                {
+                    var patient = (Patient)entry.Resource;
+                    patients.Add(patient);
+                }
             }
-            catch (Exception ex)
+            catch (FhirOperationException ex)
             {
-                MessageBox.Show("Error loading patients: " + ex.Message);
+                MessageBox.Show($"Error loading patients: {ex.Message}");
             }
         }
 
-        // Method to load log entries
-        private void LoadLogEntries()
+        private async Task LoadMessages()
         {
-            logEntries = new ObservableCollection<LogEntry>();
+            messages = new ObservableCollection<Message>();
 
             try
             {
-                // Implement logic to load log entries from database or any other source
-                // Example:
-                // logEntries.Add(new LogEntry { Message = "User login successful", Timestamp = DateTime.Now });
-                // logEntries.Add(new LogEntry { Message = "Failed login attempt", Timestamp = DateTime.Now });
+                Bundle response = await fhirClient.SearchAsync<Message>(); // Use FhirClient to search for Messages
+                foreach (var entry in response.Entry)
+                {
+                    var message = (Message)entry.Resource;
+                    messages.Add(message);
+                }
             }
-            catch (Exception ex)
+            catch (FhirOperationException ex)
             {
-                MessageBox.Show("Error loading log entries: " + ex.Message);
+                MessageBox.Show($"Error loading messages: {ex.Message}");
             }
         }
 
+        // Implement similar methods for loading log entries and other data
     }
 }
+
 
