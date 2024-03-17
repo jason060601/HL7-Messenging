@@ -1,14 +1,18 @@
-﻿using System;
+//Script will be modified to the following:
+//"String plainData" will be the password parameter derived from user input in LoginPortal
+//Generated hash used as parameter for credential combination
+
+using System;
 using System.Text;
 using System.Security.Cryptography;
 
-namespace PasswordHashing
+namespace FHIRMessagingApplication
 {
-    class Program
+    class PasswordHashing
     {
         static void Main(string[] args)
         {
-            //Password is taken as cleartext before hashing
+            
             string plainData = "Chatham1";
             Console.WriteLine("Raw data: {0}", plainData);
             string hashedData = ComputeSha256Hash(plainData);
