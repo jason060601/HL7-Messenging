@@ -1,26 +1,50 @@
-﻿using System.Windows;
+//Revisions on the front end include implementing UI library to improve user experience and make application look professional
+
+using System.Windows;
 using System.Data.SqlClient;
 using System.Security.Cryptography;
 using System.Text;
 using System.Net.Configuration;
 using System;
 
-namespace YourAppName
+namespace LoginPortal
 {
     public partial class MainWindow : Window
     {
-        private readonly string connectionString = "Server=localhost; Database=master; Trusted_Connection=True";
-        // In a real-world scenario, replace this with actual authentication logic
+        //For testing purposes, the connection is established to my local SQL database "MessagingApplication"
+        private readonly string connectionString = "Server = localhost; Database=MessagingApplication ;Trusted_Connection=True";
+
+        //Password input starts as cleartext then turns into a hash by SHA256 hashing algorithm
+        public static string HashPassword (string password)
+        {
+            using (SHA256 sha256Hash = SHA256.Create())
+            {
+                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    builder.Append(bytes[i].ToString("x2"));
+                }
+
+                return builder.ToString();
+            }
+        }
+        
         private bool AuthenticateUser(string username, string password)
         {
-            string query = "SELECT COUNT(*) FROM Users WHERE Username = @username AND Password = @password";
+            //Call HashPassword function with initial cleartext input
+
+            string hashedPassword = HashPassword(password);
+
+            string query = "SELECT COUNT(*) FROM LoginPortal_MessagingApplication.dbo.Users WHERE Username = @username AND hashedPassword = @password";
 
             using (SqlConnection connection = new SqlConnection(connectionString))
-                                {
+            {
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@username", username);
-                    command.Parameters.AddWithValue("@password", (password));
+                    command.Parameters.AddWithValue("@password", (hashedPassword));
 
                     connection.Open();
 
@@ -28,7 +52,7 @@ namespace YourAppName
 
                     return userCount == 1;
                 }
-            }   
+            }
         }
 
         public MainWindow()
@@ -43,21 +67,19 @@ namespace YourAppName
 
             if (AuthenticateUser(username, password))
             {
-                // Successful login
                 txtMessage.Text = "Login successful!";
-                // Add logic to navigate to the next part of your application
+                // Call LoadDashboard() function with the username and password parameters - in ConnectToDashboard Class
             }
             else
             {
-                // Failed login
                 txtMessage.Text = "Invalid username or password. Please try again.";
             }
         }
 
-        private void RegisterButton_Click(object sender, RoutedEventArgs e)
-        {
-            RegistrationPortal registrationPortal = new RegistrationPortal();
-            registrationPortal.Show();
-        }
+      //  private void RegisterButton_Click(object sender, RoutedEventArgs e)
+      //  {
+           // RegistrationPortal registrationPortal = new RegistrationPortal();
+           // registrationPortal.Show();
+      //  }
     }
 }
