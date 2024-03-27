@@ -1,3 +1,4 @@
+using LoginPortal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,9 @@ namespace RegistratePortal
 
             else
              {
+        //Passwords match, hash the password
+        //string hashedPassword = HashPassword(txtPassword.Password);
+        
         //This string will be local server string, until SQL server uploaded into instance
         //string connectionString = "";
 
