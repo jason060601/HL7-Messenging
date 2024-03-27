@@ -33,9 +33,20 @@ namespace RegistratePortal
             }
 
             else
-            {
-                //This will allow the user to move onto the "Personal Information" section
-            }
+             {
+        //This string will be local server string, until SQL server uploaded into instance
+        //string connectionString = "";
+
+        //using (SqlConnection connection = new SqlConnection(connectionString)) {
+
+        //connection.Open();
+        //string sql = "INSERT INTO [User] (Email, Password)
+        //SqlCommand command = new SqlCommand(sql, connection)
+        //command.Parameters.AddWithValue("@EmailAddress", txtEmail.Text);
+        //command.Parameters.AddWithValue("@Password". txtPassword.Password);
+  
+        //This will allow the user to move onto the "Personal Information" section
+             }
         }
     }
 }
