@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,23 +10,32 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace YourAppName
+namespace RegistratePortal
 {
-    /// <summary>
-    /// Interaction logic for Window1.xaml
-    /// </summary>
-    public partial class PatientRegistrationWindow : Window
+    public partial class MainWindow : Window
     {
-        public PatientRegistrationWindow()
+        public MainWindow()
         {
             InitializeComponent();
         }
-    }
 
-    private void RegisterButton_Click(object sender, RoutedEventArgs e)
-    {
-        //Registration logic
+        private void RegisterButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (txtPassword.Password != txtConfirmPassword.Password)
+            {
+                MessageBox.Show("Passwords do not match. Please re-enter your password.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                txtPassword.Clear();
+                txtConfirmPassword.Clear();
+                txtPassword.Focus();
+            }
+
+            else
+            {
+                //This will allow the user to move onto the "Personal Information" section
+            }
+        }
     }
 }
